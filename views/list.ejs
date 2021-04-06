@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+	<title>To Do List</title>
+	<meta name="description" content="the description">
+	<meta name="author" content="the content">
+	<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <div class="box" id="heading">
+        <h1> <%= detailsOfDay %> !!!!!</h1>
+    </div>
+
+
+    <div class="box">
+        <!-- now each item gets appended as a new list item  -->
+        <% for (var i = 0; i < newListItems.length; i ++){ %>
+            <div class="item">
+                <input type="checkbox">
+                <p><%= newListItems[i] %></p>
+            </div>
+        <% } %>
+
+        <form class="item" action="/" method="post">
+            <!-- you can turn off the autocomplete suggestion -->
+            <input type="text" name="newItem" placeholder="NewItem" autocomplete="off">
+    
+            <button type="submit" name="button">+</button>
+    
+        </form>
+    </div>
+    <!-- end of our form end of the div class  -->
+    
+    
+
+    <!-- running your code in the EJS Template -->
+    <!-- <% if (detailsOfDay === "Saturday") { %>
+        <h1 style="color: yellow;"> <%= detailsOfDay %> To DO List </h1>
+    <% } else { %>
+        <h1 style="color: green;"> <%= detailsOfDay %> To DO List </h1>
+    <% } %> -->
+
+    <!-- <p>
+        <h3>
+            Sachin == Codemonk1307 created this basic webpage!
+            Quite decent
+            took me a whole night to create this 
+            It includes Express, EJS, some basic knowledge of npm
+            node and Javascript quite a bit of HTML & css
+            That's all !! All the best for you also :-)
+
+        </h3>
+    </p> -->
+
+	<script src="js/scripts.js"></script>
+
+
+</body>
+</html>
+
+
+
+
+<!--<li> !!!Food buying </li>
+    <li> Food cooking </li>
+    <li> Food eatingg !!!</li> -->
