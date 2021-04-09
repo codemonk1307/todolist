@@ -2,10 +2,11 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const date = require(__dirname + "/date.js");
+const _ = require("lodash");
 
 const app = express();
-
-var items = ["Wake Up", "Drink Water", "Do Excersize"];
 
 // most important step to make your script to view from list.ejs file using view engine
 app.set('view engine', 'ejs');
@@ -13,35 +14,157 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-app.get("/", function(req, res){
-    //   res.send("Hello");
+mongoose.connect("mongodb+srv://admin:rocket@13@cluster0.g8kjp.mongodb.net/todolistDB", {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
+//mongoose schema
+const itemsSchema = {
+    name : String
+};
 
-    var today = new Date();
+//mongoose model
+const Item = mongoose.model("Item", itemsSchema); 
 
-    var options = {
-        weekday : "long",
-        day : "numeric",
-        month : "long"
-    };
-
-    var day = today.toLocaleDateString("en-US", options);
-
-    res.render("list", {detailsOfDay : day, newListItems: items});  
-
+//mongoose documents
+const item1 = new Item({
+    name : "Wake Up"
 });
 
-app.post("/", function(req, res){
-    var item = req.body.newItem;
+const item2 = new Item({
+    name : "Drink Water :-)"
+});
 
-    items.push(item);
+const item3 = new Item({
+    name : "Do Excersize !"
+});
 
-    // console.log(item);
+const defaultItems = [item1, item2, item3];
+
+const listSchema = {
+  name: String,
+  items: [itemsSchema]
+};
+
+const List = mongoose.model("List", listSchema);
+
+app.get("/", function (req, res) {
+
+  const day = date.getDate();
+
+  Item.find({}, function (err, foundItems) {
+
+    if (foundItems.length === 0) {
+      Item.insertMany(defaultItems, function (err) {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Saved your default items to the Database successfully!!")
+        }
+      });
+      res.redirect("/");
+    } else {
+      res.render("list", { listTitle: day, newListItems: foundItems});
+    }
+
+  });
+
+}); 
+
+app.get("/:customListName", function(req, res){
+  // console.log(req.params.customListName)
+  const customListName = _.capitalize(req.params.customListName);
+
+  List.findOne({ name: customListName}, function(err, foundList){
+    if (err){
+      console.log(err);
+    } else {
+      if (!foundList){
+        // console.log("Your Custom List", customListName, "doesn't exists");
+        // Create a new list
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+      
+        list.save();
+        res.redirect("/" + customListName);
+      } else{
+        // console.log("Your custom list is :- ", customListName)
+        // show an existing list 
+        res.render("list", {listTitle: foundList.name, newListItems: foundList.items});
+      }
+    }
+  });
+
+  // res.redirect("/:customListName");
+});
+
+// app.get("/work", function (req, res) {
+//   res.render("list", { listTitle: "Work List", newListItems: workItems });
+// });
+
+app.post("/", function (req, res) {
+
+  const itemName = req.body.newItem;
+  const listName = req.body.list;
+
+  const item = new Item({
+    name: itemName
+  });
+
+  if (listName === date.getDate()){
+    item.save();
+    console.log("Successfully added the", itemName, "task to your", listName, "to-do list");
     res.redirect("/");
-
+  } else {
+    List.findOne({name: listName}, function(err, foundList){
+      foundList.items.push(item);
+      foundList.save();
+      console.log("Successfully added the", itemName, "task to your", listName, "to-do list");
+      res.redirect("/" + listName);
+    });
+  }
+  // if (req.body.list === "Work") {
+  //   workItems.push(item);
+  //   res.redirect("/work");
+  // } else {
+  //   items.push(item);
+  //   res.redirect("/");
+  // }
 });
 
-app.listen(3000, function(){
+app.post("/delete", function (req, res) {
+  // console.log(req.body.checkbox);
+
+  const checkedItemId = req.body.checkbox;
+  const listName = req.body.listName;
+
+  if (listName === date.getDate()) {
+    Item.findByIdAndRemove(checkedItemId, function (err) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Successfully deleted the completed task from your", listName, "to-do list");
+        res.redirect("/");
+      }
+    });
+  } else {
+    List.findOneAndUpdate({ name: listName }, { $pull: { items: { _id: checkedItemId } } }, function (err, foundList) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Successfully deleted the completed task from your", listName, "to-do list");
+        res.redirect("/" + listName);
+      }
+    });
+  }
+});
+
+app.get("/about", function (req, res) {
+  res.render("about");
+});
+
+
+app.listen(process.env.PORT || 3000, function () {
   console.log("Server started on port 3000.");
 });
 
@@ -50,8 +173,39 @@ app.listen(3000, function(){
 
 
 
-// var currentDay = today.getDay();
-    // var day = "";
+// app.get("/", function(req, res){
+    //     //   res.send("Hello");
+    
+    //     const today = new Date();
+    
+    //     const options = {
+    //         weekday : "long",
+    //         day : "numeric",
+    //         month : "long"
+    //     };
+    
+    //     const day = today.toLocaleDateString("en-US", options);
+    
+    //     res.render("list", {detailsOfDay : day, newListItems: items});  
+    
+    // });
+    
+    // app.post("/", function(req, res){
+    //     const item = req.body.newItem;
+    
+    //     items.push(item);
+    
+    //     // console.log(item);
+    //     res.redirect("/");
+    
+    // });
+    
+
+
+
+
+// const currentDay = today.getDay();
+    // const day = "";
 
     // longer methods boring and also infeasible too 
 
