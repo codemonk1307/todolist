@@ -13,6 +13,9 @@
   },
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "15.13.0"
+  },
   "bugs": {
     "url": "https://github.com/codemonk1307/todolist/issues"
   },
