@@ -1,15 +1,15 @@
 //jshint esversion:6
 
-require('dotenv').config();
+// require('dotenv').config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const date = require(__dirname + "/date.js");
 const _ = require("lodash");
-const encrypt = require("mongoose-encryption");
+// const encrypt = require("mongoose-encryption");
 
 const app = express();
-console.log(process.env.API_KEY);
+// console.log(process.env.API_KEY);
 
 // most important step to make your script to view from list.ejs file using view engine
 app.set('view engine', 'ejs');
@@ -20,12 +20,12 @@ app.use(express.static("public"));
 mongoose.connect("mongodb+srv://admin:rocket@13@cluster0.g8kjp.mongodb.net/todolistDB", {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
 //mongoose schema
-const itemsSchema = new mongoose.Schema({
+const itemsSchema = {
     name : String
-});
+};
 
 
-itemsSchema.plugin(encrypt, {secret : process.env.SECRET});
+// itemsSchema.plugin(encrypt, {secret : process.env.SECRET});
 
 //mongoose model
 const Item = mongoose.model("Item", itemsSchema); 
