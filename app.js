@@ -25,7 +25,7 @@ const itemsSchema = new mongoose.Schema({
 });
 
 
-itemsSchema.plugin(encrypt, {secret : process.env.SECRET, encryptedFields : ["name"]});
+itemsSchema.plugin(encrypt, {secret : process.env.SECRET});
 
 //mongoose model
 const Item = mongoose.model("Item", itemsSchema); 
